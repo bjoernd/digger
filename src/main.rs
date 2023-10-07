@@ -59,8 +59,24 @@ fn sanitize_arguments(mut args: Cli) -> Cli {
     args
 }
 
+fn banner()
+{
+    println!(r" _____                                                               _____");
+    println!(r"( ___ )                                                             ( ___ )");
+    println!(r" |   |~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|   |");
+    println!(r" |   |     _____                                                     |   |");
+    println!(r" |   |  __|__   |__    ____    ______    ______    ______    _____   |   |");
+    println!(r" |   | |     \     |  |    |  |   ___|  |   ___|  |   ___|  |     |  |   |");
+    println!(r" |   | |      \    |  |    |  |   |  |  |   |  |  |   ___|  |     \  |   |");
+    println!(r" |   | |______/  __|  |____|  |______|  |______|  |______|  |__|\__\ |   |");
+    println!(r" |   |    |_____|                                                    |   |");
+    println!(r" |___|~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~|___|");
+    println!(r"(_____)                                                             (_____)");
+    println!();
+}
+
 fn main() -> Result<(), DiggerError> {
-    println!("Digger"); // TODO: better banner
+    banner();
 
     let mut args = Cli::parse();
     args = sanitize_arguments(args);
