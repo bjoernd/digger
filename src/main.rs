@@ -6,6 +6,8 @@ struct Cli
 {
     #[clap(short, long)]
     resolver: Option<Ipv4Addr>,
+    #[arg(required = true)]
+    cname: String,
 }
 
 #[derive(Debug)]
@@ -19,10 +21,12 @@ const RESOLV_CONF : &str = "/etc/resolv.conf";
 
 fn dump_arguments(args: &Cli)
 {
+    println!("Configuration:");
     match args.resolver {
         Some(r) => println!("    Resolver: {}", r),
         None => println!("    Resolver: /etc/resolv.conf"),
     }
+    println!("    CNAME: {}", args.cname);
 }
 
 fn get_system_resolver() -> Result<Ipv4Addr, DiggerError>
