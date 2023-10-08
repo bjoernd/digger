@@ -1,12 +1,24 @@
 use clap::Parser;
 use std::{net::Ipv4Addr, str::FromStr};
 
+/// A DNS client
 #[derive(Parser)]
-struct Cli
+struct DiggerArguments
 {
+    /// IP address of the resolver to use
     #[clap(short, long)]
     resolver: Option<Ipv4Addr>,
+    /// UDP port to use to send request
+    #[clap(short, long, default_value_t = 53)]
+    port: u16,
+    /// CNAME to query
     #[arg(required = true)]
+    cname: String,
+}
+
+struct DiggerSettings {
+    resolver: Ipv4Addr,
+    port: u16,
     cname: String,
 }
 
@@ -19,14 +31,12 @@ enum DiggerError
 
 const RESOLV_CONF : &str = "/etc/resolv.conf";
 
-fn dump_arguments(args: &Cli)
+fn dump_arguments(args: &DiggerSettings)
 {
     println!("Configuration:");
-    match args.resolver {
-        Some(r) => println!("    Resolver: {}", r),
-        None => println!("    Resolver: /etc/resolv.conf"),
-    }
-    println!("    CNAME: {}", args.cname);
+    println!("    Resolver: {}", args.resolver);
+    println!("    Port    : {}", args.port);
+    println!("    CNAME   : {}", args.cname);
 }
 
 fn get_system_resolver() -> Result<Ipv4Addr, DiggerError>
@@ -52,15 +62,17 @@ fn get_system_resolver() -> Result<Ipv4Addr, DiggerError>
 }
 
 /* Make sure our arguments are in a sane state */
-fn sanitize_arguments(mut args: Cli) -> Cli {
+fn sanitize_arguments(args: DiggerArguments) -> DiggerSettings {
+
     /* Resolver is optional. If it does not exist, we use the system's default one. */
-    args.resolver = match args.resolver {
-        Some(r) => Some(r),
+    let resolver = match args.resolver {
+        Some(r) => r,
         None => {
-            Some(get_system_resolver().unwrap())
+            get_system_resolver().unwrap()
         }
     };
-    args
+
+    DiggerSettings{ resolver, port: args.port, cname: args.cname }
 }
 
 fn banner()
@@ -82,9 +94,9 @@ fn banner()
 fn main() -> Result<(), DiggerError> {
     banner();
 
-    let mut args = Cli::parse();
-    args = sanitize_arguments(args);
+    let args = DiggerArguments::parse();
+    let parameters = sanitize_arguments(args);
 
-    dump_arguments(&args);
+    dump_arguments(&parameters);
     Ok(())
 }
