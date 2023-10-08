@@ -1,5 +1,8 @@
+#![allow(unused)] // TODO
+
 use clap::Parser;
 use std::{net::Ipv4Addr, net::UdpSocket, str::FromStr};
+use socket::{htons,htonl,ntohs,ntohl};
 
 /// A DNS client
 #[derive(Parser)]
@@ -107,6 +110,105 @@ fn banner()
     println!();
 }
 
+/* https://www.rfc-editor.org/rfc/rfc1035 */
+struct DnsHeader {
+    id : u16,
+    cfg : u16,
+    qdcount : u16,
+    ancount : u16,
+    nscount : u16,
+    arcount : u16,
+}
+
+enum DnsOperations {
+    Query,
+    IQuery,
+    Status,
+}
+
+impl DnsHeader {
+    fn new() -> DnsHeader {
+        DnsHeader { id: 0, cfg: 0, qdcount: 0, ancount: 0, nscount: 0, arcount: 0 }
+    }
+
+    fn qr(&self) -> bool {
+        self.cfg & 0x1 != 0
+    }
+
+    fn set_qr(& mut self, set: bool) {
+        match set {
+            true => self.cfg |= 1,
+            false => self.cfg &= !1,
+        }
+    }
+
+    fn opcode(&self) -> DnsOperations {
+        let op = ntohs((self.cfg & 0x001E) >> 1);
+        match op {
+            0 => DnsOperations::Query,
+            1 => DnsOperations::IQuery,
+            2 => DnsOperations::Status,
+            _ => {
+                println!("Unknown opcode: {:x}", op);
+                std::process::exit(1);
+            }
+        }
+    }
+
+    fn set_opcode(& mut self, op: DnsOperations) {
+        self.cfg &= !0x001E;
+        let mut opcode : u16 = match op {
+            DnsOperations::Query => htons(0),
+            DnsOperations::IQuery => htons(1),
+            DnsOperations::Status => htons(2),
+        };
+        opcode >>= 1;
+        self.cfg |= opcode;
+    }
+
+    fn get_cfg_bit(&self, offset: usize) -> bool {
+       self.cfg & (1 << offset) != 0
+    }
+
+    fn set_cfg_bit(&mut self, offset: usize, set: bool) {
+        let op = 1 << offset;
+        if set {
+            self.cfg |= op;
+        } else {
+            self.cfg &= !op;
+        }
+    }
+
+    fn aa(&self) -> bool { self.get_cfg_bit(5) }
+    fn set_aa(& mut self, set: bool) { self.set_cfg_bit(5, set); }
+
+    fn tc(&self) -> bool { self.get_cfg_bit(6) }
+    fn set_tc(& mut self, set: bool) { self.set_cfg_bit(6, set); }
+
+    fn rd(&self) -> bool { self.get_cfg_bit(7) }
+    fn set_rd(& mut self, set: bool) { self.set_cfg_bit(7, set); }
+
+    fn ra(&self) -> bool { self.get_cfg_bit(8) }
+    fn set_ra(& mut self, set: bool) { self.set_cfg_bit(8, set); }
+
+    fn rcode(&self) -> u8 {
+        ((self.cfg & 0xF000) >> 12) as u8
+    }
+
+    fn set_rcode(& mut self, rc: u8) {
+        self.cfg &= 0x0FFF;
+        self.cfg |= (rc as u16) << 12;
+    }
+}
+
+fn build_dns_request(resolver: Ipv4Addr, port: u16, cname: String)
+{
+    let mut header = DnsHeader::new();
+    header.id = 1;
+    header.set_opcode(DnsOperations::Query);
+    header.qdcount = 1;
+}
+
 fn main() -> Result<(), DiggerError> {
     banner();
 
@@ -119,6 +221,7 @@ fn main() -> Result<(), DiggerError> {
     println!("Opened socket at {}", socket.local_addr()
                                         .expect("Could not get socket address"));
 
+    build_dns_request(parameters.resolver, parameters.port, parameters.cname);
     // build DNS packet in a buffer
     // socket.send_to(buffer, SockAddr(resolver, port))
 
