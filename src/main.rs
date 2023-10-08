@@ -22,6 +22,16 @@ struct DiggerSettings {
     cname: String,
 }
 
+impl DiggerSettings {
+    fn dump(&self)
+    {
+        println!("Configuration:");
+        println!("    Resolver: {}", self.resolver);
+        println!("    Port    : {}", self.port);
+        println!("    CNAME   : {}", self.cname);
+    }
+}
+
 #[derive(Debug)]
 enum DiggerError
 {
@@ -30,14 +40,6 @@ enum DiggerError
 }
 
 const RESOLV_CONF : &str = "/etc/resolv.conf";
-
-fn dump_arguments(args: &DiggerSettings)
-{
-    println!("Configuration:");
-    println!("    Resolver: {}", args.resolver);
-    println!("    Port    : {}", args.port);
-    println!("    CNAME   : {}", args.cname);
-}
 
 fn get_system_resolver() -> Result<Ipv4Addr, DiggerError>
 {
@@ -97,6 +99,6 @@ fn main() -> Result<(), DiggerError> {
     let args = DiggerArguments::parse();
     let parameters = sanitize_arguments(args);
 
-    dump_arguments(&parameters);
+    parameters.dump();
     Ok(())
 }
