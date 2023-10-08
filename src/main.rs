@@ -143,6 +143,85 @@ enum DnsOperations {
     Status,
 }
 
+enum DnsType {
+    Address,
+    NameServer,
+    MailDestination,
+    MailForwarder,
+    CName,
+    StartOfAuthority,
+    MailBox,
+    MailGroup,
+    MailRename,
+    Null,
+    WellKnownService,
+    Pointer,
+    HostInformation,
+    MailboxInformation,
+    MailExchange,
+    Text,
+    AXFR,
+    MAILB,
+    MAILA,
+    All,
+}
+
+impl DnsType {
+    fn to_u8(&self) -> u8 {
+        match self {
+            Self::Address => 1,
+            Self::NameServer => 2,
+            Self::MailDestination => 3,
+            Self::MailForwarder => 4,
+            Self::CName => 5,
+            Self::StartOfAuthority => 6,
+            Self::MailBox => 7,
+            Self::MailGroup => 8,
+            Self::MailRename => 9,
+            Self::Null => 10,
+            Self::WellKnownService => 11,
+            Self::Pointer => 12,
+            Self::HostInformation => 13,
+            Self::MailboxInformation => 14,
+            Self::MailExchange => 15,
+            Self::Text => 16,
+            Self::AXFR => 252,
+            Self::MAILA => 253,
+            Self::MAILB => 254,
+            Self::All => 255,
+        }
+    }
+
+    fn from_u8(v: u8) -> DnsType {
+        match v {
+            1 => Self::Address,
+            2 => Self::NameServer,
+            3 => Self::MailDestination,
+            4 => Self::MailForwarder,
+            5 => Self::CName,
+            6 => Self::StartOfAuthority,
+            7 => Self::MailBox,
+            8 => Self::MailGroup,
+            9 => Self::MailRename,
+            10 => Self::Null,
+            11 => Self::WellKnownService,
+            12 => Self::Pointer,
+            13 => Self::HostInformation,
+            14 => Self::MailboxInformation,
+            15 => Self::MailExchange,
+            16 => Self::Text,
+            252 => Self::AXFR,
+            253 => Self::MAILA,
+            254 => Self::MAILB,
+            255 => Self::All,
+            _ => {
+                println!("E: unknown DNS type: {}", v);
+                std::process::exit(1);
+            }
+        }
+    }
+}
+
 impl DnsHeader {
     fn new() -> DnsHeader {
         DnsHeader { id: 0, cfg: 0, qdcount: 0, ancount: 0, nscount: 0, arcount: 0 }
