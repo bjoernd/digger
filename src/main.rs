@@ -39,6 +39,16 @@ enum DiggerError
     ResolverNotFound,
 }
 
+impl DiggerError {
+    fn to_str(&self) -> &str {
+        match self {
+            DiggerError::ResolverNotFound => {
+                "Could not determine system resolver."
+            }
+        }
+    }
+}
+
 const RESOLV_CONF : &str = "/etc/resolv.conf";
 
 fn get_system_resolver() -> Result<Ipv4Addr, DiggerError>
@@ -69,8 +79,12 @@ fn sanitize_arguments(args: DiggerArguments) -> DiggerSettings {
     /* Resolver is optional. If it does not exist, we use the system's default one. */
     let resolver = match args.resolver {
         Some(r) => r,
-        None => {
-            get_system_resolver().unwrap()
+        None => match get_system_resolver() {
+            Ok(t) => t,
+            Err(e) => {
+                println!("{}", e.to_str());
+                std::process::exit(e as i32);
+            }
         }
     };
 
