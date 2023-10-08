@@ -110,7 +110,24 @@ fn banner()
     println!();
 }
 
-/* https://www.rfc-editor.org/rfc/rfc1035 */
+/* https://www.rfc-editor.org/rfc/rfc1035
+*
+*                                   1  1  1  1  1  1
+*     0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+*   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+*   |                      ID                       |
+*   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+*   |QR|   Opcode  |AA|TC|RD|RA|   Z    |   RCODE   |
+*   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+*   |                    QDCOUNT                    |
+*   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+*   |                    ANCOUNT                    |
+*   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+*   |                    NSCOUNT                    |
+*   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+*   |                    ARCOUNT                    |
+*   +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+*/
 struct DnsHeader {
     id : u16,
     cfg : u16,
@@ -192,12 +209,12 @@ impl DnsHeader {
     fn set_ra(& mut self, set: bool) { self.set_cfg_bit(8, set); }
 
     fn rcode(&self) -> u8 {
-        ((self.cfg & 0xF000) >> 12) as u8
+        ntohs((self.cfg & 0xF000) >> 12) as u8
     }
 
     fn set_rcode(& mut self, rc: u8) {
         self.cfg &= 0x0FFF;
-        self.cfg |= (rc as u16) << 12;
+        self.cfg |= htons(rc as u16) << 12;
     }
 }
 
