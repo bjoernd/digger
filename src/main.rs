@@ -222,6 +222,37 @@ impl DnsType {
     }
 }
 
+enum DnsClass {
+    Internet,
+    CSNET,
+    CHAOS,
+    Hesiod,
+}
+
+impl DnsClass {
+    fn to_u8(&self) -> u8 {
+        match self {
+            Self::Internet => 1,
+            Self::CSNET => 2,
+            Self::CHAOS => 3,
+            Self::Hesiod => 4,
+        }
+    }
+
+    fn from_u8(v: u8) -> DnsClass {
+        match v {
+            1 => Self::Internet,
+            2 => Self::CSNET,
+            3 => Self::CHAOS,
+            4 => Self::Hesiod,
+            _ => {
+                println!("E: unknown DNS class {}", v);
+                std::process::exit(1);
+            }
+        }
+    }
+}
+
 impl DnsHeader {
     fn new() -> DnsHeader {
         DnsHeader { id: 0, cfg: 0, qdcount: 0, ancount: 0, nscount: 0, arcount: 0 }
