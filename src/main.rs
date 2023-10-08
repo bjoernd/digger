@@ -1,5 +1,5 @@
 use clap::Parser;
-use std::{net::Ipv4Addr, str::FromStr};
+use std::{net::Ipv4Addr, net::UdpSocket, str::FromStr};
 
 /// A DNS client
 #[derive(Parser)]
@@ -114,5 +114,13 @@ fn main() -> Result<(), DiggerError> {
     let parameters = sanitize_arguments(args);
 
     parameters.dump();
+
+    let socket = UdpSocket::bind("127.0.0.1:0").expect("Cannot bind to UDP port");
+    println!("Opened socket at {}", socket.local_addr()
+                                        .expect("Could not get socket address"));
+
+    // build DNS packet in a buffer
+    // socket.send_to(buffer, SockAddr(resolver, port))
+
     Ok(())
 }

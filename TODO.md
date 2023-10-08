@@ -5,6 +5,7 @@
 - reverse querying
 - DNS over TCP
 - benchmarking
+- make it async?
 
 ## Done
 - default resolver: if no resolver given in CLI, get system default resolver
